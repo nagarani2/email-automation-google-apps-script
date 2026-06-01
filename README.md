@@ -17,4 +17,4 @@ This project automates email sending using Google Sheets, Gmail, and Google Apps
 - Gmail
 
 ## Demo
-Paste your Google Sheet link here.
+https://drive.google.com/drive/folders/1nf2fp1ZoKa9PxAiGFeS_-H5cdAcmzX6P?usp=drive_link
