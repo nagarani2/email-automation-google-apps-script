@@ -1,0 +1,113 @@
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("Email Automation")
+    .addItem("Setup Sheets", "setupSheets")
+    .addItem("Send Emails", "sendEmails")
+    .addItem("Clear Sent Status", "clearSentStatus")
+    .addItem("Empty Sheets", "emptySheets")
+    .addToUi();
+}
+
+function setupSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Recipients Sheet
+  let recipients = ss.getSheetByName("Recipients");
+  if (!recipients) {
+    recipients = ss.insertSheet("Recipients");
+  }
+  recipients.clear();
+
+  recipients.getRange("A1:C3").setValues([
+    ["Name", "Email", "Status"],
+    ["John", "john@example.com", ""],
+    ["Sarah", "sarah@example.com", ""]
+  ]);
+
+  // Template Sheet
+  let template = ss.getSheetByName("Template");
+  if (!template) {
+    template = ss.insertSheet("Template");
+  }
+  template.clear();
+
+  template.getRange("A1:B3").setValues([
+    ["Field", "Value"],
+    ["Subject", "Welcome {{Name}}"],
+    ["Body", "Hello {{Name}}, Welcome to our internship program."]
+  ]);
+
+  // Write-up Sheet
+  let writeup = ss.getSheetByName("Write-up");
+  if (!writeup) {
+    writeup = ss.insertSheet("Write-up");
+  }
+
+  SpreadsheetApp.getUi().alert("Sheets Created Successfully!");
+}
+
+function sendEmails() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const recipientSheet = ss.getSheetByName("Recipients");
+  const templateSheet = ss.getSheetByName("Template");
+
+  const recipients = recipientSheet.getDataRange().getValues();
+
+  const subjectTemplate = templateSheet.getRange("B2").getValue();
+  const bodyTemplate = templateSheet.getRange("B3").getValue();
+
+  for (let i = 1; i < recipients.length; i++) {
+
+    const name = recipients[i][0];
+    const email = recipients[i][1];
+    const status = recipients[i][2];
+
+    if (status === "Sent") {
+      continue;
+    }
+
+    const subject = subjectTemplate.replace("{{Name}}", name);
+    const body = bodyTemplate.replace("{{Name}}", name);
+
+    GmailApp.sendEmail(email, subject, body);
+
+    recipientSheet.getRange(i + 1, 3).setValue("Sent");
+  }
+
+  SpreadsheetApp.getUi().alert("Emails Sent Successfully!");
+}
+
+function clearSentStatus() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName("Recipients");
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow > 1) {
+    sheet.getRange(2, 3, lastRow - 1, 1).clearContent();
+  }
+
+  SpreadsheetApp.getUi().alert("Status Cleared!");
+}
+
+function emptySheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const recipientSheet = ss.getSheetByName("Recipients");
+  const templateSheet = ss.getSheetByName("Template");
+
+  recipientSheet.clear();
+  recipientSheet.getRange("A1:C1").setValues([
+    ["Name", "Email", "Status"]
+  ]);
+
+  templateSheet.clear();
+  templateSheet.getRange("A1:B3").setValues([
+    ["Field", "Value"],
+    ["Subject", "Welcome {{Name}}"],
+    ["Body", "Hello {{Name}}, Welcome to our internship program."]
+  ]);
+
+  SpreadsheetApp.getUi().alert("Sheets Emptied!");
+}
